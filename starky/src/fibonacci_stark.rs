@@ -215,8 +215,8 @@ mod tests {
         type F = <C as GenericConfig<D>>::F;
         type S = FibonacciStark<F, D>;
 
-        let config = StarkConfig::standard_fast_config();
-        let num_rows = 1 << 5;
+        let config = StarkConfig::rate_4_config(); // standard_fast_config();
+        let num_rows = 1 << 15;
         let public_inputs = [F::ZERO, F::ONE, fibonacci(num_rows - 1, F::ZERO, F::ONE)];
 
         // Test first STARK
@@ -231,7 +231,10 @@ mod tests {
         )?;
         verify_stark_proof(stark, proof.clone(), &config)?;
 
-        recursive_proof::<F, C, S, C, D>(stark, proof, &config, true)
+        let start = std::time::Instant::now();
+        let res = recursive_proof::<F, C, S, C, D>(stark, proof, &config, true);
+        println!("{:?}", start.elapsed());
+        res
     }
 
     fn recursive_proof<

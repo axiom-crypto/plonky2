@@ -60,16 +60,16 @@ impl StarkConfig {
         }
     }
 
-    pub const fn high_rate_config() -> Self {
+    pub const fn rate_4_config() -> Self {
         Self {
-            security_bits: 100,
+            security_bits: 80,
             num_challenges: 2,
             fri_config: FriConfig {
-                rate_bits: 3,
-                cap_height: 4,
-                proof_of_work_bits: 16,
-                reduction_strategy: FriReductionStrategy::ConstantArityBits(4, 5),
-                num_query_rounds: 28,
+                rate_bits: 2,
+                cap_height: 0,
+                proof_of_work_bits: 0,
+                reduction_strategy: FriReductionStrategy::ConstantArityBits(1, 2),
+                num_query_rounds: 103,
             },
         }
     }

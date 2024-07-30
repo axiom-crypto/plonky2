@@ -147,6 +147,8 @@ where
     let num_challenges = config.num_challenges;
     let quotient_degree = common_data.quotient_degree();
     let degree = common_data.degree();
+    dbg!(quotient_degree);
+    dbg!(degree);
 
     set_lookup_wires(prover_data, common_data, &mut partition_witness);
 
@@ -168,6 +170,7 @@ where
             .map(|column| PolynomialValues::new(column.clone()))
             .collect()
     );
+    dbg!(wires_values.len());
 
     let wires_commitment = timed!(
         timing,
@@ -236,6 +239,7 @@ where
         zs_partial_products
     };
 
+    dbg!(zs_partial_products_lookups.len());
     let partial_products_zs_and_lookup_commitment = timed!(
         timing,
         "commit to partial products, Z's and, if any, lookup polynomials",
@@ -283,6 +287,7 @@ where
             })
             .collect()
     );
+    dbg!(all_quotient_poly_chunks.len());
 
     let quotient_polys_commitment = timed!(
         timing,
