@@ -48,18 +48,19 @@ impl StarkConfig {
     /// Targets ~100 bit conjectured security.
     pub const fn standard_fast_config() -> Self {
         Self {
-            security_bits: 100,
+            security_bits: 80,
             num_challenges: 2,
             fri_config: FriConfig {
                 rate_bits: 1,
-                cap_height: 4,
-                proof_of_work_bits: 16,
-                reduction_strategy: FriReductionStrategy::ConstantArityBits(4, 5),
-                num_query_rounds: 84,
+                cap_height: 0,
+                proof_of_work_bits: 0,
+                reduction_strategy: FriReductionStrategy::ConstantArityBits(1, 1),
+                num_query_rounds: 103,
             },
         }
     }
 
+    /// Config with rate = 4 = 2^2
     pub const fn rate_4_config() -> Self {
         Self {
             security_bits: 80,

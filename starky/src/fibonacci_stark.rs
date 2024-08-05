@@ -159,26 +159,25 @@ mod tests {
         (0..n).fold((x0, x1), |x, _| (x.1, x.0 + x.1)).1
     }
 
+    // RUST_LOG=debug RUSTFLAGS=-Ctarget-cpu=native cargo t --release fibonacci_stark::tests::test_fibonacci_stark -- --nocapture --exact
     #[test]
     fn test_fibonacci_stark() -> Result<()> {
+        init_logger();
+
         const D: usize = 2;
         type C = PoseidonGoldilocksConfig;
         type F = <C as GenericConfig<D>>::F;
         type S = FibonacciStark<F, D>;
 
         let config = StarkConfig::standard_fast_config();
-        let num_rows = 1 << 5;
+        let num_rows = 1 << 20;
         let public_inputs = [F::ZERO, F::ONE, fibonacci(num_rows - 1, F::ZERO, F::ONE)];
 
         let stark = S::new(num_rows);
         let trace = stark.generate_trace(public_inputs[0], public_inputs[1]);
-        let proof = prove::<F, C, S, D>(
-            stark,
-            &config,
-            trace,
-            &public_inputs,
-            &mut TimingTree::default(),
-        )?;
+        let mut timing = TimingTree::default();
+        let proof = prove::<F, C, S, D>(stark, &config, trace, &public_inputs, &mut timing)?;
+        timing.print();
 
         verify_stark_proof(stark, proof, &config)
     }
@@ -216,6 +215,7 @@ mod tests {
         type S = FibonacciStark<F, D>;
 
         let config = StarkConfig::rate_4_config(); // standard_fast_config();
+        assert!(config.check_config::<F, D>().is_ok());
         let num_rows = 1 << 15;
         let public_inputs = [F::ZERO, F::ONE, fibonacci(num_rows - 1, F::ZERO, F::ONE)];
 
