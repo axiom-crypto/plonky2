@@ -134,14 +134,19 @@ impl<F: RichField + Extendable<D>, const D: usize> Stark<F, D> for FibonacciStar
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
+    use itertools::Itertools;
     use plonky2::field::extension::Extendable;
+    use plonky2::field::polynomial::PolynomialValues;
     use plonky2::field::types::Field;
+    use plonky2::fri::oracle::PolynomialBatch;
     use plonky2::hash::hash_types::RichField;
     use plonky2::iop::witness::PartialWitness;
     use plonky2::plonk::circuit_builder::CircuitBuilder;
     use plonky2::plonk::circuit_data::CircuitConfig;
     use plonky2::plonk::config::{AlgebraicHasher, GenericConfig, PoseidonGoldilocksConfig};
+    use plonky2::timed;
     use plonky2::util::timing::TimingTree;
+    use plonky2_maybe_rayon::rayon::iter::IntoParallelIterator;
 
     use crate::config::StarkConfig;
     use crate::fibonacci_stark::FibonacciStark;
@@ -180,6 +185,39 @@ mod tests {
         timing.print();
 
         verify_stark_proof(stark, proof, &config)
+    }
+
+    // RUST_LOG=debug RUSTFLAGS=-Ctarget-cpu=native cargo t --release fibonacci_stark::tests::bench_commit_matrix -- --nocapture --exact
+    #[test]
+    fn bench_commit_matrix() -> Result<()> {
+        init_logger();
+
+        const D: usize = 2;
+        type C = PoseidonGoldilocksConfig;
+        type F = <C as GenericConfig<D>>::F;
+        type S = FibonacciStark<F, D>;
+
+        let config = StarkConfig::standard_fast_config();
+        let num_rows = 1 << 20;
+        let num_cols = 32;
+        let trace_poly_values = (0..num_cols)
+            .map(|_| PolynomialValues::new(F::rand_vec(num_rows)))
+            .collect_vec();
+        let mut timing = TimingTree::default();
+        let trace_commitment = timed!(
+            &mut timing,
+            "compute trace commitment",
+            PolynomialBatch::<F, C, D>::from_values(
+                trace_poly_values.clone(),
+                config.fri_config.rate_bits,
+                false,
+                config.fri_config.cap_height,
+                &mut timing,
+                None,
+            )
+        );
+        timing.print();
+        Ok(())
     }
 
     #[test]
