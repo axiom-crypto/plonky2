@@ -137,7 +137,7 @@ mod tests {
     use itertools::Itertools;
     use plonky2::field::extension::Extendable;
     use plonky2::field::polynomial::PolynomialValues;
-    use plonky2::field::types::Field;
+    use plonky2::field::types::{Field, Sample};
     use plonky2::fri::oracle::PolynomialBatch;
     use plonky2::hash::hash_types::RichField;
     use plonky2::iop::witness::PartialWitness;
